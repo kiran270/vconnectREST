@@ -21,7 +21,7 @@ var connection = mysql.createConnection({
   password : 'root',
   database : 'vconnect'
 });
-app.post('/forgotpassword', (req, res) => {
+app.post('/verifySecurityAnswers', (req, res) => {
 	var userID=req.body.userID;
 	var answer1=req.body.answer1;
 	var answer2=req.body.answer2;
@@ -70,8 +70,8 @@ app.post('/setSecurityAnswers', (req, res) => {
 // });
 
 app.post('/authenticate', (req, res) => {
-	var username=req.body.username;
-	username=username+'@blr.velankani.com'
+	var userID=req.body.userID;
+	userID=username+'@blr.velankani.com'
 	var password=req.body.password;
 	client.bind(username,password, function(err) {
 	  if(err){
@@ -82,66 +82,56 @@ app.post('/authenticate', (req, res) => {
 	  }
 	});
 });
+function encodePassword(password) {
+	var newpassword=Buffer.from(password, 'utf8');
+    return newpassword; 
+}
 
-
-// client.bind('kiran.koribilli@blr.velankani.com', '!Gowthami5009', function(err) {
-//   if(err){
-//   	console.log(err);
-//   }
-//   else{
-//   	console.log("success");
-//   }
-// });
-// function encodePassword(password) {
-// 	var newpassword=Buffer.from(password, 'utf8');
-//     return newpassword; 
-// }
-
-// function Check(user,pass,newPassword){
-// 	client.bind('CN=vconnect test,OU=ITIT,OU=Teams,DC=blr,DC=velankani,DC=com', 'Local@admin12', function (err, result) {
-// 		if (err) {
-// 			console.error('error: ' + err);
-// 		}
-// 		else {
-// 			client.search('DC=blr,DC=velankani,DC=com', {
-// 				filter:'(mail=kiran.koribilli@velankani.com)',
-// 				scope: 'sub'
-// 		}, function(err, res) {
-// 			res.on('searchEntry', function(entry) {
-// 				var userDN = entry.object.dn;
-// 				// console.log(userDN);
-// 				client.modify(userDN, [
-// 					new ldap.Change({
-// 						operation: 'delete',
-// 						modification: {
-// 							unicodePwd: encodePassword(pass)
-// 						}
-// 					}),
-// 					new ldap.Change({
-// 						operation: 'add',
-// 						modification: {
-// 							unicodePwd: encodePassword(newPassword)
-// 						}
-// 					})
-// 				], function(err) {
-// 					if (err) {
-// 						console.log(err.code);
-// 						console.log(err.name);
-// 						console.log(err.message);
-// 						client.unbind();
-// 					}
-// 					else {
-// 						console.log('Password changed!');
-// 					}
-// 				});
-// 			});
-// 			res.on('error', function(err) {
-// 				console.error('error:nhhh ' + err);
-// 			});
-// 			res.on('end', function(result) {
-// 				console.log('status: ' + result);
-// 			});
-// 		});
-// 		}
-// 	});
-// }
+function Check(user,pass,newPassword){
+	client.bind('CN=vconnect test,OU=ITIT,OU=Teams,DC=blr,DC=velankani,DC=com', 'Local@admin12', function (err, result) {
+		if (err) {
+			console.error('error: ' + err);
+		}
+		else {
+			client.search('DC=blr,DC=velankani,DC=com', {
+				filter:'(mail=kiran.koribilli@velankani.com)',
+				scope: 'sub'
+		}, function(err, res) {
+			res.on('searchEntry', function(entry) {
+				var userDN = entry.object.dn;
+				// console.log(userDN);
+				client.modify(userDN, [
+					new ldap.Change({
+						operation: 'delete',
+						modification: {
+							unicodePwd: encodePassword(pass)
+						}
+					}),
+					new ldap.Change({
+						operation: 'add',
+						modification: {
+							unicodePwd: encodePassword(newPassword)
+						}
+					})
+				], function(err) {
+					if (err) {
+						console.log(err.code);
+						console.log(err.name);
+						console.log(err.message);
+						client.unbind();
+					}
+					else {
+						console.log('Password changed!');
+					}
+				});
+			});
+			res.on('error', function(err) {
+				console.error('error:nhhh ' + err);
+			});
+			res.on('end', function(result) {
+				console.log('status: ' + result);
+			});
+		});
+		}
+	});
+}
